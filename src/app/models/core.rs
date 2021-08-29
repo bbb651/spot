@@ -181,6 +181,7 @@ impl SongList {
         assert_eq!(batch.batch_size, self.batch_size);
 
         let index = batch.offset / batch.batch_size;
+
         if self.batches.contains_key(&index) {
             return None;
         }
@@ -271,11 +272,15 @@ impl SongList {
         })
     }
 
-    pub fn last_batch(&self) -> Batch {
-        Batch {
-            batch_size: self.batch_size,
-            total: self.total,
-            offset: self.last_batch_key * self.batch_size,
+    pub fn last_batch(&self) -> Option<Batch> {
+        if self.total_loaded == 0 {
+            None
+        } else {
+            Some(Batch {
+                batch_size: self.batch_size,
+                total: self.total,
+                offset: self.last_batch_key * self.batch_size,
+            })
         }
     }
 

@@ -194,6 +194,7 @@ pub struct HomeState {
     pub albums: ListStore<AlbumModel>,
     pub next_playlists_page: Pagination<()>,
     pub playlists: ListStore<AlbumModel>,
+    pub saved_tracks: SongList,
 }
 
 impl Default for HomeState {
@@ -204,6 +205,7 @@ impl Default for HomeState {
             albums: ListStore::new(),
             next_playlists_page: Pagination::new((), 30),
             playlists: ListStore::new(),
+            saved_tracks: SongList::new_sized(50),
         }
     }
 }
@@ -276,6 +278,14 @@ impl UpdatableState for HomeState {
                 self.next_playlists_page.set_loaded_count(content.len());
                 self.playlists.extend(content.into_iter().map(|p| p.into()));
                 vec![BrowserEvent::SavedPlaylistsUpdated]
+            }
+            BrowserAction::AppendSavedTracks(song_batch) => {
+                let offset = song_batch.batch.offset;
+                if self.saved_tracks.add(*song_batch).is_some() {
+                    vec![BrowserEvent::SavedTracksAppended(offset)]
+                } else {
+                    vec![]
+                }
             }
             _ => vec![],
         }
